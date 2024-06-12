@@ -74,7 +74,6 @@ const removeInput = (inp = CURRENT_INPUT)=>{
             d = i
         }
     }
-    console.log(d);
     INPS[d-1].focus()
     texts.removeChild(inp)
     
@@ -121,7 +120,6 @@ window.onkeydown = (e)=>{
         
         createNum()
     }
-    console.log(keys);
     if(keys == "Backspace"){
        if(CURRENT_INPUT){ if(CURRENT_INPUT.value == ""){
         removeInput()
@@ -133,7 +131,6 @@ window.onkeydown = (e)=>{
 
 
 window.oninput = ()=>{
-    console.log(CURRENT_INPUT.value);
     socket.emit("edit",CURRENT_INPUT.id,CURRENT_INPUT.value,userId)
 }
 

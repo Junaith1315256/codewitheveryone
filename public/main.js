@@ -123,8 +123,9 @@ window.onkeydown = (e)=>{
     if(keys == "Backspace"){
        if(CURRENT_INPUT){ if(CURRENT_INPUT.value == ""){
         removeInput()
-        removeNum()}
+        removeNum()
         socket.emit("remove",CURRENT_INPUT.id,userId)
+    }
     }
     }
 }
@@ -143,7 +144,7 @@ line.value = code;}
 socket.on("remove",(id,uid)=>{
     if(uid != userId){
         const currenInput=document.getElementById(id)
-        removeInput(currenInput);
+        removeInput();
         removeNum()
     }
 })

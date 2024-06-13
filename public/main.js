@@ -177,11 +177,11 @@ socket.on("run",()=>{
     RunTheProgram()
 });
 const Color = {
-    darkblue:"#5e5fff",
-    blue:"#1aa7ec",
-    default:"#00d3f1",
+    darkblue:"#5f5fff",
+    blue:"#1aa7ff",
+    default:"#00ffff",
     green:"#7be495",
-    purple:"#797ef6",
+    purple:"#ff00ff",
     orange:"#f79256",
     yellow:"#ffdd00",
     white:"#ffffff",
@@ -202,7 +202,7 @@ window.oninput = ()=>{
         const div =  document.createElement("div")
         let keyword = ["for","if","else","while","import"] 
         let keyword1 = ["const","function","class","let","new"]
-        let keyword2 = ["=",">","<","-","+","*","/",";",","]
+        let keyword2 = ["=",">","<","-","+","*","/",";",",",":"]
         let keyword3 = [1,2,3,4,5,6,7,8,9,0]
         let str =  INPS[i].value
         let text = ""
@@ -300,7 +300,7 @@ window.oninput = ()=>{
                     }
                 }
                 if(s == "(" && cond){
-                    Span(s,Color.yellow,div)
+                    Span(s,Color.purple,div)
                 }
                 if(s == "(" && text.length > 0){
                     text = text+s
@@ -339,8 +339,8 @@ window.oninput = ()=>{
                 if(s== ke){
                     cond1 = true
                     
-                 Span(text,Color.default,div)
-                    Span(s,Color.green,div)
+                    Span(text,Color.default,div)
+                    Span(s,(text?Color.default:Color.green),div)
                     text = ""
                     break;
                 }

@@ -373,6 +373,9 @@ window.oninput = ()=>{
 window.addEventListener("mousemove",(e)=>{
     socket.emit("mousemove",(e.x/window.innerWidth)*100,(e.y/window.innerHeight)*100,userId)
 })
+window.addEventListener("touchmove",(e)=>{
+    socket.emit("mousemove",(e.touches[0].clientX/window.innerWidth)*100,(e.touches[0].clientY/window.innerHeight)*100,userId)
+})
 
 socket.on("mousemove",(x,y,uid)=>{
     if(uid != userId){

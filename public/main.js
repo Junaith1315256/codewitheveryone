@@ -154,7 +154,7 @@ const RunColorCode = ()=>{
                     const ke = keyword1[k];
                     if(text == ke){
                         cond = true
-                        Span(text,Color.darkblue,div)
+                        Span(text,Color.darkblue,div,"italic")
                         Span("\xa0",Color.default,div)
                         text = ""
                         break;
@@ -358,10 +358,11 @@ const Color = {
     darkgreen: "#007542"
 }
 const colorCode  = document.getElementById("color_code")
-function Span(msg,color,div){
+function Span(msg,color,div,italic = "normal"){
     const span = document.createElement("span")
     span.innerText = msg;
     span.style.color = color;
+    span.style.fontStyle = italic
     div.appendChild(span)
 }
 window.oninput = ()=>{

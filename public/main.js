@@ -221,7 +221,6 @@ window.oninput = ()=>{
             }
             if(str[j-1]&&str[j-2]){
                if (str[j-2]=='*'&&str[j-1]=="/" &&bigComment){
-                    text
                     Span(text,Color.darkgreen,div)
                     text=""
                     bigComment=false
@@ -244,9 +243,16 @@ window.oninput = ()=>{
                 }
             }
             if (comment || bigComment) {
-                text = text+s
+                
+                if(s == " "){
+                    Span(text,dcolor,div)
+                    Span("\xa0",Color.default,div)
+                    text = ""
+                }else{
+                   text = text+s
+                }
+                continue
             }
-            if(comment||bigComment)continue
             if (s == '"'||s=="'" || s == '`'||strstart) {
                 strstart = true
                 text = text+s

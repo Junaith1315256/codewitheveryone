@@ -14,9 +14,10 @@ const Log_Container = document.getElementById("runner_container")
 const createLog = (msg,type = "")=>{
     const LOGS = document.createElement("div")
     LOGS.className = `logs ${type}`
-    LOGS.textContent = msg
+    LOGS.innerText = msg.replace("\t","\xa0\xa0\xa0\xa0")
     Log_Container.appendChild(LOGS)
 }
+
 
 const RUN =  document.getElementById("run");
 const RunTheProgram = ()=>{
@@ -39,162 +40,22 @@ const RunTheProgram = ()=>{
     },1000)
 }
 RUN.addEventListener("click",()=>{
-    socket.emit("run")
-})
 
- console.log = (message)=>{
-    createLog(message)
-}
-
-console.warn = (message)=>{
-    createLog(message,"warn")
-}
-console.error = (message)=>{
-    createLog(message,"error")
-} 
-const createInput = ()=>{
-    const texts = document.getElementById("texts")
-    const Input =  document.createElement("input")
-    Input.type = "text"
-    Input.className = "lines"
-    Input.id = `line${INPS.length}`
-    Input.spellcheck = false;
-    Input.autocomplete = "off"
-    //Input.id = `line${num}`
-    Input.addEventListener("click",(e)=>{
-        const l = e.currentTarget
-        CURRENT_INPUT = l
-    })
-    texts.appendChild(Input)
-}
-const removeInput = (inp = CURRENT_INPUT)=>{
-    const texts = document.getElementById("texts")
-    let d = 0
-    for (let i = 0; i < INPS.length; i++) {
-        const inps = INPS[i];
-        if(inp == inps){
-            d = i
-        }
+    if(RUN.className == "run_unclicked"){
+        socket.emit("run")
+         RUN.innerText = "Running"
+    RUN.className = "run_clicked"
+    setTimeout(()=>{
+        RUN.innerText = "Run"
+        RUN.className = "run_unclicked"
+   },1000)
     }
-    INPS[d-1].focus()
-    texts.removeChild(inp)
+   
     
-}
-const createNum = ()=>{
-    const numc = document.getElementById("num_container")
-    const num = document.createElement("div")
-    num.innerText = INPS.length;
-    num.className = "nums"
-    numc.appendChild(num)
-        
-}
-const removeNum = ()=>{
-    const numc = document.getElementById("num_container")
-    const num = document.getElementsByClassName("nums")
-    numc.removeChild(num[num.length-1])
-}
-for (let i = 0; i < INPS.length; i++) {
-    const line = INPS[i]
-    INPS[i].addEventListener("click",(e)=>{
-        const l = e.currentTarget
-        CURRENT_INPUT = l
-    })
-}
-window.onkeydown = (e)=>{
-    CURRENT_INPUT = document.activeElement;
-    let keys = e.key
-    if(keys == "Enter"){
-        socket.emit("add",CURRENT_INPUT.id,userId)
-        createInput()
-        if(CURRENT_INPUT != INPS[INPS.length -2]){
-        for (let i = INPS.length; i >= 0; i--) {
-            if(CURRENT_INPUT == INPS[i-1])break;
-           if(INPS[i] && INPS[i-1]){
-            INPS[i].value = INPS[i-1].value
-            INPS[i-1].value = ""
-            INPS[i-1].focus()
-            }
-            
-        }}else{
-            INPS[INPS.length -1].focus()
-        }
-        
-        
-        createNum()
-    }
-    if(keys == "Backspace"){
-       if(CURRENT_INPUT){ if(CURRENT_INPUT.value == ""){
-        removeInput()
-        removeNum()
-        socket.emit("remove",CURRENT_INPUT.id,userId)
-    }
-    }
-    }
-}
-
-
-window.oninput = ()=>{
-    socket.emit("edit",CURRENT_INPUT.id,CURRENT_INPUT.value,userId)
-}
-
-socket.on("edit",(id,code,uid)=>{
-    if(uid != userId){
-const line =  document.getElementById(id);
-line.value = code;}
+    
+   
 })
-
-socket.on("remove",(id,uid)=>{
-    if(uid != userId){
-        const currenInput=document.getElementById(id)
-        removeInput();
-        removeNum()
-    }
-})
-
-socket.on("add",(id,uid)=>{
-    const currenInput=document.getElementById(id)
-    if(uid != userId){
-        createInput()
-        createNum()
-        if(currenInput != INPS[INPS.length -2]){
-            for (let i = INPS.length; i >= 0; i--) {
-                if(currenInput == INPS[i-1])break;
-               if(INPS[i] && INPS[i-1]){
-                INPS[i].value = INPS[i-1].value
-                INPS[i-1].value = ""
-                INPS[i-1].focus()
-                }
-                
-            }}else{
-                INPS[INPS.length -1].focus()
-            }
-            
-            
-    }
-})
-
-socket.on("run",()=>{
-    RunTheProgram()
-});
-const Color = {
-    darkblue:"#5f5fff",
-    blue:"#1aa7ff",
-    default:"#00ffff",
-    green:"#7be495",
-    purple:"#ff00ff",
-    orange:"#f79256",
-    yellow:"#ffdd00",
-    white:"#ffffff",
-    darkgreen: "#007542"
-}
-const colorCode  = document.getElementById("color_code")
-function Span(msg,color,div){
-    const span = document.createElement("span")
-    span.innerText = msg;
-    span.style.color = color;
-    div.appendChild(span)
-}
-window.oninput = ()=>{
+const RunColorCode = ()=>{
     colorCode.innerHTML = ""
     
     let bigComment = false
@@ -348,17 +209,13 @@ window.oninput = ()=>{
                     break;
                 }
             }
-            if(cond1)continue
-            
+            if(cond1)continue;
             if(s == "." && text.length > 0){
                 text = text+s
                 Span(text, Color.blue,div)
                 text = ""
                 continue
             }
-            
-           
-            
             if(s==")" && text.length > 0){
                 Span(text,Color.default,div)
                 text = ""
@@ -374,6 +231,142 @@ window.oninput = ()=>{
         }
         Span(text.replace("\xa0"),dcolor,div)
     }
+}
+/*  console.log = (message)=>{
+    createLog(message)
+} */
+
+console.warn = (message)=>{
+    createLog(message,"warn")
+}
+console.error = (message)=>{
+    console.log(message)
+    createLog(message,"error")
+} 
+const createInput = ()=>{
+    const texts = document.getElementById("texts")
+    const Input =  document.createElement("input")
+    Input.type = "text"
+    Input.className = "lines"
+    Input.id = `line${INPS.length}`
+    Input.spellcheck = false;
+    Input.autocomplete = "off"
+    //Input.id = `line${num}`
+    Input.addEventListener("click",(e)=>{
+        const l = e.currentTarget
+        CURRENT_INPUT = l
+    })
+    texts.appendChild(Input)
+}
+const removeInput = (inp = CURRENT_INPUT)=>{
+    const texts = document.getElementById("texts")
+    let d = 0
+    for (let i = 0; i < INPS.length; i++) {
+        const inps = INPS[i];
+        if(inp == inps){
+            d = i
+        }
+    }
+    INPS[d-1].focus()
+    texts.removeChild(inp)
+    
+}
+const createNum = ()=>{
+    const numc = document.getElementById("num_container")
+    const num = document.createElement("div")
+    num.innerText = INPS.length;
+    num.className = "nums"
+    numc.appendChild(num)
+        
+}
+const removeNum = ()=>{
+    const numc = document.getElementById("num_container")
+    const num = document.getElementsByClassName("nums")
+    numc.removeChild(num[num.length-1])
+}
+for (let i = 0; i < INPS.length; i++) {
+    const line = INPS[i]
+    INPS[i].addEventListener("click",(e)=>{
+        const l = e.currentTarget
+        CURRENT_INPUT = l
+    })
+}
+window.onkeydown = (e)=>{
+    CURRENT_INPUT = document.activeElement;
+    let keys = e.key
+    if(keys == "Enter"){
+        socket.emit("add",CURRENT_INPUT.id,userId)
+    }
+    if(keys == "Backspace"){
+       if(CURRENT_INPUT){ if(CURRENT_INPUT.value == ""){
+        socket.emit("remove",CURRENT_INPUT.id,userId)
+    }
+    }
+    }
+}
+
+
+
+socket.on("edit",(id,code,uid)=>{
+    if(uid != userId){
+const line =  document.getElementById(id);
+line.value = code;
+RunColorCode()
+}
+})
+
+socket.on("remove",(id,uid)=>{
+        const currenInput=document.getElementById(id)
+        removeInput(currenInput);
+        removeNum()
+})
+
+socket.on("add",(id,uid)=>{
+    const currenInput=document.getElementById(id)
+        createInput()
+        createNum()
+        if(currenInput != INPS[INPS.length -2]){
+            for (let i = INPS.length; i >= 0; i--) {
+                if(currenInput == INPS[i-1])break;
+               if(INPS[i] && INPS[i-1]){
+                INPS[i].value = INPS[i-1].value
+                INPS[i-1].value = ""
+                INPS[i-1].focus()
+                }
+                
+            }}else{
+                INPS[INPS.length -1].focus()
+            }
+            
+            
+    
+})
+
+socket.on("run",()=>{
+    RunTheProgram()
+});
+const Color = {
+    darkblue:"#5f5fff",
+    blue:"#1aa7ff",
+    default:"#00ffff",
+    green:"#7be495",
+    purple:"#ff00ff",
+    orange:"#f79256",
+    yellow:"#ffdd00",
+    white:"#ffffff",
+    darkgreen: "#007542"
+}
+const colorCode  = document.getElementById("color_code")
+function Span(msg,color,div){
+    const span = document.createElement("span")
+    span.innerText = msg;
+    span.style.color = color;
+    div.appendChild(span)
+}
+window.oninput = ()=>{
+    socket.emit("edit",CURRENT_INPUT.id,CURRENT_INPUT.value,userId)
+    RunColorCode()
+   
 }
 
 window.addEventListener("mousemove",(e)=>{
@@ -391,3 +384,7 @@ socket.on("mousemove",(x,y,uid)=>{
 const cur = document.getElementsByClassName("cursors")[0]
 cur.style.top = "50px"
 cur.style.left = "50px"
+
+window.addEventListener("error",(e)=>{
+    console.log(e);
+})

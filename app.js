@@ -13,9 +13,10 @@ app.use(express.static(path.join('public')));
 content = ""
 //app.use(express.static('home'))
 io.on('connection', (socket) => {
+  //io.emit("connectedId")
   socket.on("code",code=>{
     io.emit("code",code)
-    content = `try{\n${code}\n}catch(err){\nconsole.error(err)}`
+    content = `try{\n${code}\n}catch(err){\nconst [, lineno, colno] = err.stack.match(/(\\d+):(\\d+)/);\nconsole.error(err+"\\n\\t"+"at line:"+(parseInt(lineno)-2)+":"+colno);\n}`
     fs.writeFile('public/editor.js', content, function (err) {
         if (err) throw err;
     });

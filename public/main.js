@@ -389,16 +389,14 @@ cur.style.left = "50px"
 window.addEventListener("error",(e)=>{
     console.log(e);
 })
-
+let newtoweb = true;
 socket.on("codeFile",(code) =>{
-    let text = ""
-    console.log(code);
+   if(newtoweb){ let text = ""
     for (let i = 0; i < code.length; i++) {
         const s= code[i];
       //  console.log(s);
        code.search
         if(s == "\n"||i==code.length-1){
-            console.log(text);
             createInput(text)
             createNum()
             RunColorCode()
@@ -407,4 +405,6 @@ socket.on("codeFile",(code) =>{
         }
         text = text+s
     }
+newtoweb =false;
+}
 })

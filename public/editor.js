@@ -1,6 +1,2 @@
-try{
 
-askakj
-
-}catch(err){
-console.error(err)}
+console.log('hello');

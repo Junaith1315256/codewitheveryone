@@ -10,12 +10,12 @@ body{
     display: flex;
     flex-direction: column;
     background-color: #111;
+    overscroll-behavior: none;
 }
 
 #editor_container,#runner_container{
     width: 100%;
-    background-color: #111;
-
+    background:none;
     display: flex;
 }
 #editor_container{
@@ -31,12 +31,18 @@ body{
     padding: 2px;
 }
 
-#texts,#num_container{
+#num_container{
     display: flex;
     flex-direction: column;
 }
 #texts{
-    width: 100%;
+    position: absolute;
+    left: 50px;
+    top: 0;
+    z-index: 2;
+}
+#texts{
+    width: calc( 100% - 50px);
 }
 #num_container{
     width: 50px;
@@ -45,22 +51,24 @@ body{
 }
 
 .nums,.lines{
-    padding: 1px;
     height: 20px;
-    margin-top: 0px;
+    font-size: 15px;
+    width: 100%;
 }
 
 .lines{
     outline: none;
     border: none;
-    background-color: #222;
+    background:none;
+    color: transparent;
+    caret-color: #00ff00;
 }
 
 #run{
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    border: 1px solid white;
+    border: 1px solid white,1px solid #aa5500;
     background-color: #1aa4ff;
     position: absolute;
     right: 5%;
@@ -73,4 +81,19 @@ body{
 
 .warn{
     color:#ffff00;
+}
+
+#color_code{
+    background-color: #222;
+    width: calc( 100% - 60px);
+    height: 80%;
+    position: absolute;
+    left: 50px;
+    z-index: -1;
+}
+
+#color_code > div{
+    font-size: 15px;
+    color: #ff00ff;
+    height: 20px;
 }

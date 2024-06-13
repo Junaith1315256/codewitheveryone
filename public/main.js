@@ -300,7 +300,7 @@ window.oninput = ()=>{
                     }
                 }
                 if(s == "(" && cond){
-                    Span(s,Color.purple,div)
+                    Span(s,Color.yellow,div)
                 }
                 if(s == "(" && text.length > 0){
                     text = text+s
@@ -314,7 +314,10 @@ window.oninput = ()=>{
                 }
                 if(cond)continue
             }
-            
+            if(s=="("){
+                Span(s, Color.yellow,div)
+                continue
+            }
             if(s == " "){
                 Span(text,Color.default,div)
                 Span("\xa0",Color.default,div)
@@ -372,3 +375,19 @@ window.oninput = ()=>{
         Span(text.replace("\xa0"),dcolor,div)
     }
 }
+
+window.addEventListener("mousemove",(e)=>{
+    socket.emit("mousemove",(e.x/window.innerWidth)*100,(e.y/window.innerHeight)*100,userId)
+})
+
+socket.on("mousemove",(x,y,uid)=>{
+    if(uid != userId){
+        const cur = document.getElementsByClassName("cursors")[0]
+        cur.style.left = x+"%";
+        cur.style.top = y+"%"
+    }
+})
+
+const cur = document.getElementsByClassName("cursors")[0]
+cur.style.top = "50px"
+cur.style.left = "50px"

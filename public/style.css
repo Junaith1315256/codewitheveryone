@@ -11,6 +11,8 @@ body{
     flex-direction: column;
     background-color: #111;
     overscroll-behavior: none;
+    cursor:url(http://www.rw-designer.com/cursor-extern.php?id=165376);
+   
 }
 
 #editor_container,#runner_container{
@@ -96,4 +98,16 @@ body{
     font-size: 15px;
     color: #ff00ff;
     height: 20px;
+}
+.cursors{
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-image: url(http://www.rw-designer.com/cursor-extern.php?id=165376);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    top: 0;
+    left: 0;
+    z-index: 20;
 }

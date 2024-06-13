@@ -35,6 +35,9 @@ io.on('connection', (socket) => {
   socket.on("run",()=>{
     io.emit("run")
   })
+  socket.on("mousemove",(x,y,uid)=>{
+    io.emit("mousemove",x,y,uid)
+  })
 });
 content = "\nconsole.log('hello');"
 fs.writeFile('public/editor.js', content, function (err) {

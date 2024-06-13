@@ -232,9 +232,9 @@ const RunColorCode = ()=>{
         Span(text.replace("\xa0"),dcolor,div)
     }
 }
-/*  console.log = (message)=>{
+  console.log = (message)=>{
     createLog(message)
-} */
+}
 
 console.warn = (message)=>{
     createLog(message,"warn")
@@ -243,7 +243,7 @@ console.error = (message)=>{
     console.log(message)
     createLog(message,"error")
 } 
-const createInput = ()=>{
+const createInput = (msg = "")=>{
     const texts = document.getElementById("texts")
     const Input =  document.createElement("input")
     Input.type = "text"
@@ -251,6 +251,7 @@ const createInput = ()=>{
     Input.id = `line${INPS.length}`
     Input.spellcheck = false;
     Input.autocomplete = "off"
+    Input.value = msg
     //Input.id = `line${num}`
     Input.addEventListener("click",(e)=>{
         const l = e.currentTarget
@@ -387,4 +388,23 @@ cur.style.left = "50px"
 
 window.addEventListener("error",(e)=>{
     console.log(e);
+})
+
+socket.on("codeFile",(code) =>{
+    let text = ""
+    console.log(code);
+    for (let i = 0; i < code.length; i++) {
+        const s= code[i];
+      //  console.log(s);
+       code.search
+        if(s == "\n"||i==code.length-1){
+            console.log(text);
+            createInput(text)
+            createNum()
+            RunColorCode()
+            text = ""
+            continue;
+        }
+        text = text+s
+    }
 })

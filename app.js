@@ -12,10 +12,12 @@ const { log } = require("console")
 app.use(express.static(path.join('public')));
 content = ""
 //app.use(express.static('home'))
+let codes = "console.log('Welcome to code Editor');"
 io.on('connection', (socket) => {
   //io.emit("connectedId")
   socket.on("code",code=>{
     io.emit("code",code)
+    codes = code;
     content = `try{\n${code}\n}catch(err){\nconst [, lineno, colno] = err.stack.match(/(\\d+):(\\d+)/);\nconsole.error(err+"\\n\\t"+"at line:"+(parseInt(lineno)-2)+":"+colno);\n}`
     fs.writeFile('public/editor.js', content, function (err) {
         if (err) throw err;
@@ -39,9 +41,10 @@ io.on('connection', (socket) => {
   socket.on("mousemove",(x,y,uid)=>{
     io.emit("mousemove",x,y,uid)
   })
+    io.emit("codeFile",codes)
 });
-content = "\nconsole.log('hello');"
-fs.writeFile('public/editor.js', content, function (err) {
+
+fs.writeFile('public/editor.js', codes, function (err) {
     if (err) throw err;
     console.log('Saved!');
 });

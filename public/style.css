@@ -27,7 +27,18 @@ body{
     flex-direction: column;
     padding: 5px;
 }
-
+#runner_container::before{
+    content: "Output:";
+    color: white;
+    position: absolute;
+    background-color: #111;
+    padding: 2px;
+    border-radius: 5px;
+    margin-top: -23px;
+    padding-left: 3px;
+    left: -1px;
+    border: 2px solid white;
+}
 .logs{
     padding: 2px;
 }

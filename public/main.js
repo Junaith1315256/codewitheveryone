@@ -126,7 +126,7 @@ const RunColorCode = ()=>{
                     continue;
                 }
             }
-            if((text.includes('"')&&text.includes('"',1))||((text.includes('}')||(text.includes('`'))&&text.includes('`',1)))||(text.includes("'")&&text.includes("'",1))){
+            if((text.includes('"')&&text.includes('"',1))||((text.includes('}')||text.includes('`'))&&text.includes('`',1))||(text.includes("'")&&text.includes("'",1))){
                 Span(text.replace(" ","\xa0"), Color.orange,div)
                 strstart = false
                 text = ""
@@ -135,7 +135,7 @@ const RunColorCode = ()=>{
             if(strstart)continue
             
             
-            if((s == " "||s=="(")&& text.length > 0){
+            if((s == " "||s=="("||s=="{")&& text.length > 0){
                 let cond  = false
                 
                 for (let k = 0; k < keyword.length; k++) {
@@ -163,9 +163,18 @@ const RunColorCode = ()=>{
                 if(s == "(" && cond){
                     Span(s,Color.yellow,div)
                 }
+                if(s == "{" && cond){
+                    Span(s,Color.default,div)
+                }
                 if(s == "(" && text.length > 0){
                     text = text+s
                     Span(text, Color.yellow,div)
+                    text = ""
+                    continue
+                }
+                if(s == "{" && text.length > 0){
+                    text = text+s
+                    Span(text, Color.default,div)
                     text = ""
                     continue
                 }
@@ -372,17 +381,23 @@ window.oninput = ()=>{
 }
 
 window.addEventListener("mousemove",(e)=>{
-    socket.emit("mousemove",(e.x/window.innerWidth)*100,(e.y/window.innerHeight)*100,userId)
+    socket.emit("mousemove",e.x,e.y,userId)
 })
 window.addEventListener("touchmove",(e)=>{
-    socket.emit("mousemove",(e.touches[0].clientX/window.innerWidth)*100,(e.touches[0].clientY/window.innerHeight)*100,userId)
+    socket.emit("mousemove",e.touches[0].clientX,e.touches[0].clientY,userId)
+})
+window.addEventListener("touchstart",(e)=>{
+    socket.emit("mousemove",e.touches[0].clientX,e.touches[0].clientY,userId)
+})
+window.addEventListener("touchend",(e)=>{
+    socket.emit("mousemove",e.touches[0].clientX,e.touches[0].clientY,userId)
 })
 
 socket.on("mousemove",(x,y,uid)=>{
     if(uid != userId){
         const cur = document.getElementsByClassName("cursors")[0]
-        cur.style.left = x+"%";
-        cur.style.top = y+"%"
+        cur.style.left = x+"px";
+        cur.style.top = y+"px"
     }
 })
 

@@ -107,17 +107,21 @@ body{
 
 #color_code{
     background-color: #222;
-    width: calc( 100% - 60px);
+    width: max-content;
     height: 80%;
     position: absolute;
+    display: flex;
+    flex-direction: column;
     left: 50px;
     z-index: -1;
+    min-width: 100%;
 }
 
 #color_code > div{
     font-size: 15px;
     color: #ff00ff;
     height: 20px;
+    width: max-content;
 }
 .cursors{
     position: absolute;

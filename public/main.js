@@ -7,15 +7,35 @@ function getInputs(){
     inputs = ""
     for (let i = 0; i < INPS.length; i++) {
         const line = INPS[i];
-        inputs = inputs+"\n"+line.value
+        inputs = inputs+"\n"+line.innerText
     }
 }
 const Log_Container = document.getElementById("runner_container")
 const createLog = (msg,type = "")=>{
     const LOGS = document.createElement("div")
-    LOGS.className = `logs ${type}`
-    LOGS.innerText = msg.replace("\t","\xa0\xa0\xa0\xa0")
+    LOGS.className = `logs`
+    let ostring = ""
+    for (let i = 0; i < msg.length; i++) {
+        const s = msg[i];
+       
+        if(s=="\t"){
+            ostring=ostring+"\xa0\xa0\xa0\xa0\xa0\xa0\xa0";
+            continue
+        }
+        ostring= ostring+s
+    }
     Log_Container.appendChild(LOGS)
+    if(type){
+        const span = document.createElement("span")
+        span.className = "material-icons icon "+type
+        span.innerText = type
+        span.style.fontSize = "15px"
+        LOGS.appendChild(span)
+    }
+    const span1 = document.createElement("span")
+    span1.className = type
+    span1.innerText = ostring;
+    LOGS.appendChild(span1)
 }
 
 
@@ -27,6 +47,8 @@ const RunTheProgram = ()=>{
         Log_Container.removeChild(e)
         i--;
     }
+    RUN.innerText = "Running"
+    RUN.className = "run_clicked"
     getInputs()
     socket.emit("code",inputs)
     var body= document.getElementsByTagName('body')[0];
@@ -37,6 +59,8 @@ const RunTheProgram = ()=>{
         script.src= 'editor.js';
         script.id = "script"
         body.appendChild(script)
+        RUN.innerText = "Run"
+        RUN.className = "run_unclicked"
     },1000)
 }
 RUN.addEventListener("click",()=>{
@@ -65,7 +89,7 @@ const RunColorCode = ()=>{
         let keyword1 = ["const","function","class","let","new"]
         let keyword2 = ["=",">","<","-","+","*","/",";",",",":"]
         let keyword3 = [1,2,3,4,5,6,7,8,9,0]
-        let str =  INPS[i].value
+        let str =  INPS[i].innerText
         let text = ""
         let comment = false
         let dcolor = bigComment?Color.darkgreen: Color.default
@@ -241,26 +265,26 @@ const RunColorCode = ()=>{
         Span(text.replace("\xa0"),dcolor,div)
     }
 }
-  console.log = (message)=>{
+console.log = (message)=>{
     createLog(message)
 }
 
 console.warn = (message)=>{
-    createLog(message,"warn")
+    createLog(message,"warning")
 }
 console.error = (message)=>{
-    console.log(message)
     createLog(message,"error")
 } 
 const createInput = (msg = "")=>{
     const texts = document.getElementById("texts")
-    const Input =  document.createElement("input")
+    const Input =  document.createElement("div")
     Input.type = "text"
     Input.className = "lines"
     Input.id = `line${INPS.length}`
     Input.spellcheck = false;
     Input.autocomplete = "off"
-    Input.value = msg
+    Input.contentEditable = "true"
+    Input.innerText = msg
     //Input.id = `line${num}`
     Input.addEventListener("click",(e)=>{
         const l = e.currentTarget
@@ -308,7 +332,7 @@ window.onkeydown = (e)=>{
         socket.emit("add",CURRENT_INPUT.id,userId)
     }
     if(keys == "Backspace"){
-       if(CURRENT_INPUT){ if(CURRENT_INPUT.value == ""){
+       if(CURRENT_INPUT){ if(CURRENT_INPUT.innerText == ""){
         socket.emit("remove",CURRENT_INPUT.id,userId)
     }
     }
@@ -320,7 +344,7 @@ window.onkeydown = (e)=>{
 socket.on("edit",(id,code,uid)=>{
     if(uid != userId){
 const line =  document.getElementById(id);
-line.value = code;
+line.innerText = code;
 RunColorCode()
 }
 })
@@ -339,8 +363,8 @@ socket.on("add",(id,uid)=>{
             for (let i = INPS.length; i >= 0; i--) {
                 if(currenInput == INPS[i-1])break;
                if(INPS[i] && INPS[i-1]){
-                INPS[i].value = INPS[i-1].value
-                INPS[i-1].value = ""
+                INPS[i].innerText = INPS[i-1].innerText
+                INPS[i-1].innerText = ""
                 INPS[i-1].focus()
                 }
                 
@@ -375,7 +399,7 @@ function Span(msg,color,div,italic = "normal"){
     div.appendChild(span)
 }
 window.oninput = ()=>{
-    socket.emit("edit",CURRENT_INPUT.id,CURRENT_INPUT.value,userId)
+    socket.emit("edit",CURRENT_INPUT.id,CURRENT_INPUT.innerText,userId)
     RunColorCode()
    
 }
@@ -387,9 +411,6 @@ window.addEventListener("touchmove",(e)=>{
     socket.emit("mousemove",e.touches[0].clientX,e.touches[0].clientY,userId)
 })
 window.addEventListener("touchstart",(e)=>{
-    socket.emit("mousemove",e.touches[0].clientX,e.touches[0].clientY,userId)
-})
-window.addEventListener("touchend",(e)=>{
     socket.emit("mousemove",e.touches[0].clientX,e.touches[0].clientY,userId)
 })
 
@@ -405,17 +426,17 @@ const cur = document.getElementsByClassName("cursors")[0]
 cur.style.top = "50px"
 cur.style.left = "50px"
 
-window.addEventListener("error",(e)=>{
-    console.log(e);
-})
+window.addEventListener("error",(e)=>{console.error(e.message+"\n\tat main.js:"+e.lineno+":"+e.colno);})
 let newtoweb = true;
-socket.on("codeFile",(code) =>{
+socket.on("codeFile",(codes) =>{
    if(newtoweb){ let text = ""
-    for (let i = 0; i < code.length; i++) {
-        const s= code[i];
-      //  console.log(s);
-       code.search
-        if(s == "\n"||i==code.length-1){
+    for (let i = 0; i < codes.length; i++) {
+        const s= codes[i];
+        if(s == "\n"||i==codes.length-1){
+            if(s=="\n"&&text.length==0)continue;
+            if(i==codes.length-1 && s!="\n"){     
+                text = text+s
+            }
             createInput(text)
             createNum()
             RunColorCode()

@@ -26,6 +26,8 @@ body{
     border-top: 2px solid white;
     flex-direction: column;
     padding: 5px;
+    position: fixed;
+    top: 80%;
 }
 #runner_container::before{
     content: "Output:";
@@ -90,10 +92,11 @@ body{
     border-radius: 20px;
     border: none;
     border: 1px solid white;
-    position: absolute;
+    position: fixed;
     right: 5%;
     bottom: 10%;
     z-index: 10;
+
 }
 .run_unclicked{
     background-color: #1aa4ff;

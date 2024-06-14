@@ -11,6 +11,7 @@ function getInputs(){
     }
 }
 const Log_Container = document.getElementById("runner_container")
+
 const createLog = (msg,type = "")=>{
     const LOGS = document.createElement("div")
     LOGS.className = `logs`
@@ -25,6 +26,7 @@ const createLog = (msg,type = "")=>{
         ostring= ostring+s
     }
     Log_Container.appendChild(LOGS)
+    
     if(type){
         const span = document.createElement("span")
         span.className = "material-icons icon "+type
@@ -289,6 +291,7 @@ const createInput = (msg = "")=>{
     Input.addEventListener("click",(e)=>{
         const l = e.currentTarget
         CURRENT_INPUT = l
+        CURRENT_INPUT.contentEditable = "true"
     })
     texts.appendChild(Input)
 }
@@ -329,6 +332,7 @@ window.onkeydown = (e)=>{
     CURRENT_INPUT = document.activeElement;
     let keys = e.key
     if(keys == "Enter"){
+        CURRENT_INPUT.contentEditable = "false"
         socket.emit("add",CURRENT_INPUT.id,userId)
     }
     if(keys == "Backspace"){

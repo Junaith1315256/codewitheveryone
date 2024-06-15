@@ -1,15 +1,17 @@
-const socket = io();
-let userId = Math.floor(Math.random()*100000000)
-let CURRENT_INPUT = 0;
-const INPS = document.getElementsByClassName("lines")
-let inputs = "" 
-function getInputs(){
-    inputs = ""
-    for (let i = 0; i < INPS.length; i++) {
-        const line = INPS[i];
-        inputs = inputs+"\n"+line.innerText
-    }
+function setCaretPos(div,pos = -1){
+    div.innerText=div.textContent.length == 0?" ":div.textContent;
+    div.focus()
+    pos = pos < 0?div.textContent.length-1:pos;
+    div.contentEditable = "true"
+    const setPos  = document.createRange();
+    const set = window.getSelection()
+    setPos.setStart(div.childNodes[0],pos);
+    setPos.collapse(true);
+    set.removeAllRanges();
+    set.addRange(setPos)
+    div.focus()
 }
+
 const Log_Container = document.getElementById("runner_container")
 
 const createLog = (msg,type = "")=>{
@@ -39,6 +41,38 @@ const createLog = (msg,type = "")=>{
     span1.innerText = ostring;
     LOGS.appendChild(span1)
 }
+console.log = (...message)=>{
+    let str = ""
+    for (const msg of message) {
+        str = str + " "+msg
+    }
+    createLog(str)
+}
+
+console.warn = (message)=>{
+    createLog(message,"warning")
+}
+console.error = (...message)=>{
+    let str = ""
+    for (const msg of message) {
+        str = str + " "+msg
+    }
+    createLog(str,"error")
+} 
+const socket = io();
+let userId = Math.floor(Math.random()*100000000)
+let CURRENT_INPUT = 0;
+const INPS = document.getElementsByClassName("lines")
+let inputs = "" 
+function getInputs(){
+    inputs = ""
+    for (let i = 0; i < INPS.length; i++) {
+        const line = INPS[i];
+        inputs = inputs+"\n"+line.innerText
+    }
+}
+
+
 
 
 const RUN =  document.getElementById("run");
@@ -53,17 +87,14 @@ const RunTheProgram = ()=>{
     RUN.className = "run_clicked"
     getInputs()
     socket.emit("code",inputs)
-    var body= document.getElementsByTagName('body')[0];
-    body.removeChild(document.getElementById("script"))
-    setTimeout(()=>{
-        var script= document.createElement('script');
-        script.type= 'text/javascript';
-        script.src= 'editor.js';
-        script.id = "script"
-        body.appendChild(script)
-        RUN.innerText = "Run"
-        RUN.className = "run_unclicked"
-    },1000)
+    try { 
+        const runScript = new Function(inputs);
+        const result = runScript()
+    } catch (e) {
+        const [,lineno,colno] = e.stack.match(/>:(\d+):(\d+)/)
+        console.error(`${e}\n\tat app.js:${parseInt(lineno)-3}:${colno}`)
+    }
+
 }
 RUN.addEventListener("click",()=>{
 
@@ -85,13 +116,14 @@ const RunColorCode = ()=>{
     colorCode.innerHTML = ""
     
     let bigComment = false
+    
     for (let i = 0; i < INPS.length; i++) {
         const div =  document.createElement("div")
         let keyword = ["for","if","else","while","import"] 
         let keyword1 = ["const","function","class","let","new"]
         let keyword2 = ["=",">","<","-","+","*","/",";",",",":"]
         let keyword3 = [1,2,3,4,5,6,7,8,9,0]
-        let str =  INPS[i].innerText
+        let str =  INPS[i].textContent
         let text = ""
         let comment = false
         let dcolor = bigComment?Color.darkgreen: Color.default
@@ -181,7 +213,7 @@ const RunColorCode = ()=>{
                     if(text == ke){
                         cond = true
                         Span(text,Color.darkblue,div,"italic")
-                        Span("\xa0",Color.default,div)
+                        Span("\xa0",Color.darkblue,div)
                         text = ""
                         break;
                     }
@@ -262,21 +294,16 @@ const RunColorCode = ()=>{
             }
             
             text = text+s
-
         }
-        Span(text.replace("\xa0"),dcolor,div)
+        
+        Span(text,dcolor,div)
+        if(str[str.length-1]==" "){
+            Span("\xa0",dcolor,div)
+        }
     }
-}
-console.log = (message)=>{
-    createLog(message)
+   
 }
 
-console.warn = (message)=>{
-    createLog(message,"warning")
-}
-console.error = (message)=>{
-    createLog(message,"error")
-} 
 const createInput = (msg = "")=>{
     const texts = document.getElementById("texts")
     const Input =  document.createElement("div")
@@ -304,7 +331,9 @@ const removeInput = (inp = CURRENT_INPUT)=>{
             d = i
         }
     }
-    INPS[d-1].focus()
+    setCaretPos(INPS[d-1])
+    INPS[d-1].innerText = INPS[d-1].textContent+inp.textContent
+    
     texts.removeChild(inp)
     
 }
@@ -332,14 +361,14 @@ window.onkeydown = (e)=>{
     CURRENT_INPUT = document.activeElement;
     let keys = e.key
     if(keys == "Enter"){
+        socket.emit("add",CURRENT_INPUT.id,window.getSelection().focusOffset)
         CURRENT_INPUT.contentEditable = "false"
-        socket.emit("add",CURRENT_INPUT.id,userId)
+
     }
-    if(keys == "Backspace"){
-       if(CURRENT_INPUT){ if(CURRENT_INPUT.innerText == ""){
-        socket.emit("remove",CURRENT_INPUT.id,userId)
-    }
-    }
+    if(keys == "Backspace"&&window.getSelection().focusOffset == 0){
+       if(CURRENT_INPUT){ 
+        socket.emit("remove",CURRENT_INPUT.id,0)
+        }
     }
 }
 
@@ -353,30 +382,40 @@ RunColorCode()
 }
 })
 
-socket.on("remove",(id,uid)=>{
+socket.on("remove",(id,sel)=>{
         const currenInput=document.getElementById(id)
         removeInput(currenInput);
         removeNum()
+        RunColorCode();
 })
 
-socket.on("add",(id,uid)=>{
+socket.on("add",(id,sel)=>{
     const currenInput=document.getElementById(id)
-        createInput()
-        createNum()
-        if(currenInput != INPS[INPS.length -2]){
-            for (let i = INPS.length; i >= 0; i--) {
-                if(currenInput == INPS[i-1])break;
-               if(INPS[i] && INPS[i-1]){
-                INPS[i].innerText = INPS[i-1].innerText
-                INPS[i-1].innerText = ""
-                INPS[i-1].focus()
-                }
-                
-            }}else{
-                INPS[INPS.length -1].focus()
+    const inp_value =  currenInput.innerText;
+    let text = ""
+    for (let i = sel; i <inp_value.length; i++) {
+        let s = currenInput.innerText[i];
+        if(s == " "){s="\xa0"}
+        text = text+s
+    }
+    createInput(text)
+    createNum()
+    if(currenInput != INPS[INPS.length -2]){
+        for (let i = INPS.length; i >= 0; i--) {
+            if(currenInput == INPS[i-1]){
+                INPS[i].innerText=text
+            break;}
+            if(INPS[i] && INPS[i-1]){
+                INPS[i].innerText = INPS[i-1].textContent
+                setCaretPos(INPS[i-1],1)
             }
-            
-            
+        }
+    }else{
+        
+        setCaretPos(INPS[INPS.length -1],0)
+    }
+    currenInput.innerText = inp_value.slice(0,sel)
+    RunColorCode()
     
 })
 

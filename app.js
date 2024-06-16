@@ -8,14 +8,14 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server);
 app.use(express.static(path.join('public')));
-content = ""
 //app.use(express.static('home'))
 let codes = "console.log('Welcome to code Editor');"
 io.on('connection', (socket) => {
   //io.emit("connectedId")
   socket.on("code",code=>{
+    codes = code    
+    console.log(code);
     io.emit("code",code)
-    codes = code;
   })
   socket.on("edit",(id,code,userId) =>{
     io.emit("edit",id,code,userId)
@@ -25,8 +25,8 @@ io.on('connection', (socket) => {
     io.emit("add",id,sel)
     
   })
-  socket.on("remove",(id,userId) =>{
-    io.emit("remove",id,userId)
+  socket.on("remove",(id,sel) =>{
+    io.emit("remove",id,sel)
     
   })
   socket.on("run",()=>{
@@ -34,6 +34,9 @@ io.on('connection', (socket) => {
   })
   socket.on("mousemove",(x,y,uid)=>{
     io.emit("mousemove",x,y,uid)
+  })
+  socket.on("paste",(code)=>{
+    io.emit("paste",code)
   })
   io.emit("codeFile",codes)
 });

@@ -9,7 +9,7 @@
 body{
     display: flex;
     flex-direction: column;
-    background-color: #111;
+    background-color: #000;
     overscroll-behavior: none;
 }
 
@@ -30,6 +30,9 @@ body{
     top: 80%;
     height: 20%;
     overflow: auto;
+    width: 100%;
+    background-color: black;
+    z-index: 2;
 }
 #runner_container::before{
     content: "Output:";
@@ -65,14 +68,22 @@ body{
     z-index: 2;
 }
 #texts{
-    width: calc( 100% - 50px);
+    width: 100%;
+    padding-bottom: 50%;
 }
 #num_container{
-    width: 50px;
+    width: 45px;
     padding: 2px;
     font-size: 15px;
+    border-right: 2px solid #222;
+    color: #888;
+    background-color: #000;
+    position: absolute;
+    top: 0;
 }
-
+.nums{
+    color: #555;
+}
 .nums,.lines{
     height: 20px;
     font-size: 15px;
@@ -87,7 +98,10 @@ body{
     caret-color: #00ff00;
     width: max-content;
 }
-
+.lines:focus{
+    border-top: 1px solid #333;
+    border-bottom: 1px solid #333;
+}
 #run{
     padding: 10px;
     font-size: 15px;
@@ -119,7 +133,7 @@ body{
 }
 
 #color_code{
-    background-color: #222;
+    background-color: #000;
     width: max-content;
     height: 80%;
     position: absolute;
@@ -135,7 +149,7 @@ body{
     color: #ff00ff;
     height: 20px;
     width: max-content;
-    min-width: 15px;
+    min-width: 100%;
 }
 .cursors{
     position: absolute;
@@ -150,3 +164,7 @@ body{
     z-index: 20;
 }
 
+.num,.lines,#color_code>div{
+    min-height: 20px;
+    max-height: 20px;
+}

@@ -1,7 +1,9 @@
+const isAlpha =  /^[a-zA-Z0-9]+$/;
 function setCaretPos(div,pos = -1){
     div.innerText=div.textContent.length == 0?" ":div.textContent;
     pos = pos < 0?(div.childNodes[0].length):pos;
     div.contentEditable = "true"
+    console.log(pos,div.childNodes[0].length);
     const setPos  = document.createRange();
     const set = window.getSelection()
     setPos.setStart(div.childNodes[0],pos);
@@ -10,12 +12,10 @@ function setCaretPos(div,pos = -1){
     set.addRange(setPos)
     div.focus()
 }
-let mirror_char = true
 window.addEventListener("paste",(e)=>{
     e.preventDefault();
     var codes = (e.originalEvent || e).clipboardData.getData('text/plain');
-    console.log(codes);
-    socket.emit("paste",codes)
+   socket.emit("paste",codes)
 })
 const Log_Container = document.getElementById("runner_container")
 
@@ -46,13 +46,13 @@ const createLog = (msg,type = "")=>{
     span1.innerText = ostring;
     LOGS.appendChild(span1)
 }
-console.log = (...message)=>{
+/* console.log = (...message)=>{
     let str = ""
     for (const msg of message) {
         str = str + " "+msg
     }
     createLog(str)
-}
+} */
 
 console.warn = (message)=>{
     createLog(message,"warning")
@@ -90,13 +90,8 @@ const RunTheProgram = ()=>{
     }
     RUN.innerText = "Running"
     RUN.className = "run_clicked"
-    setTimeout(()=>{
-        RUN.innerText = "Run"
-        RUN.className = "run_unclicked"
-   },1000)
     getInputs()
     socket.emit("code",inputs)
-    let id = ""
     try { 
         const runScript = new Function(inputs);
         const result = runScript()
@@ -104,7 +99,6 @@ const RunTheProgram = ()=>{
         const [,lineno,colno] = e.stack.match(/>:(\d+):(\d+)/)
         console.error(`${e}\n\tat app.js:${parseInt(lineno)-3}:${colno}`)
     }
-
 
 }
 RUN.addEventListener("click",()=>{
@@ -123,210 +117,167 @@ RUN.addEventListener("click",()=>{
     
    
 })
-
 const RunColorCode = ()=>{
     colorCode.innerHTML = ""
-    let count_number_of_bracket = 0;
-    let brackets_colors = [Color.blue,Color.yellow,Color.purple]
-   let  multiComment  = false
-    let default_color =Color.default;
-    let before_comment_color = ""
-    let variables = []
-    let variable_created = false;
-    let classes = ["Image","Date","Audio"]
-    let class_created = false;
+    
+    let bigComment = false
+    
     for (let i = 0; i < INPS.length; i++) {
-        let comment = false;
-        if(!comment&&before_comment_color.length>0&&!multiComment){default_color=before_comment_color}
         const div =  document.createElement("div")
-        colorCode.appendChild(div)
-        let str = INPS[i].textContent
+        let keyword = ["for","if","else","while","import","break","continue"] 
+        let keyword1 = ["const","function","class","let","new"]
+        let keyword3 = [1,2,3,4,5,6,7,8,9,0]
+        let str =  INPS[i].textContent
         let text = ""
-        let keywords =[
-            ["function","let","const","class","static","var"],
-            ["for","if","else","break","continue","return","async"],
-            ["import","export","default","from","with","try","catch","throw","finally","while","do","extends","switch","case","true","false","null","undefined","await","new","super"]
-        ]
-        const reg = {
-            breaks : /\s|\(|\)|\{|\}|\[|\]|\'|\"|\`/,
-            orange:/\'|\"|\`/,
-            brackets:{
-                start:/\(|\{|\[/,
-                end:/\)|\}|\]/
-            },
-            alphaNum: /^[a-zA-Z0-9]+$/,
-            num:/^[0-9]+$/
-        }
-        let changed_to_orange_due_to = ""
-        let inside_quote = false
+        let comment = false
+        let dcolor = bigComment?Color.darkgreen: Color.default
+        let strstart = false
         for (let j = 0; j < str.length; j++) {
-            let s = str[j];
-             for (let k = 0; k < variables.length; k++) {
-                if(default_color != Color.default)break;
-                let vars = variables[k]
-                if(vars == (text).trim()){
-                    Span(text,Color.blue,div)
-                    text = ""
-                    break;
-                }
-            } 
-            for (let k = 0; k < classes.length; k++) {
-                if(default_color != Color.default)break;
-                let vars = classes[k]
-                if(vars == (text).trim()){
-                    Span(text,Color.classColor,div)
-                    text = ""
-                    break;
-                }
-            } 
-            if(str[j+1]){
-                if(str[j+1]=='/'&&s=='/'&&!comment){
-                    Span(text,default_color,div)
-                    text = ""
-                    before_comment_color = default_color
-                    default_color=Color.darkgreen;
-                    comment = true
-                    
-                }
-                if(str[j+1]=='*'&&s=='/' && !multiComment){
-                    Span(text,default_color,div)
-                    text = ""
-                    before_comment_color = default_color
-                    default_color=Color.darkgreen;
-                    multiComment = true
-                }
-                if(str[j+1]=='{'&&s=='$'&&changed_to_orange_due_to=="`"){
-                    Span(text,default_color,div)
-                    text = ""
-                    default_color=Color.default;
-                    changed_to_orange_due_to=""
-                    inside_quote=true
-                }
-                if (variable_created  && text.length > 0) {
-                    
-                text +=s
-                    if(!reg.alphaNum.test(str[j+1])){
-                        
-                    variables.push(text.trim())
-                    Span(text,Color.blue,div)
-                    variable_created = false
-                    text = ""
-                    continue;
-                }
+            const s = str[j];
+            if(text.includes("$")&&text.includes("{")&&s=="}"){
+                strstart == true;
+                text=text+s
+                Span(text,dcolor,div)
+                text= ""
                 continue;
-                } 
-                if (class_created  && text.length > 0) {
-                    
-                text +=s
-                    if(!reg.alphaNum.test(str[j+1])){
-                        
-                    classes.push(text.trim())
-                    Span(text,Color.classColor,div)
-                    class_created = false
-                    text = ""
-                    continue;
-                }
-                continue;
-                }
-            }
-            if(str[j-1]){
-                if (str[j-1]=="}"&&inside_quote) {
-                    default_color=Color.orange;
-                    changed_to_orange_due_to="`"
-                    inside_quote=false
-                } 
             }
             if(str[j-1]&&str[j-2]){
-                if(str[j-1]=='/'&&str[j-2]=='*'&&multiComment){
-                    Span(text,default_color,div)
-                    text = ""
-                    default_color=before_comment_color;
-                    multiComment = false
-                }
-            }
-           
-           
-            if(reg.breaks.test(s)){
-                
-                for (let k = 0; k < keywords.length; k++) {
-                    if(default_color != Color.default)break
-                    for (let l = 0; l < keywords[k].length; l++) {
-
-                        const keyw = keywords[k][l];
-    
-                        if(text == keyw){
-                            if(text=="const"){
-                                variable_created=true
-                            }
-                            if(text=="class"){
-                                class_created=true
-                            }
-                            Span(text,((k==0||k==2)?Color.darkblue:Color.purple),div,k==0?"italic":"normal")
-                            text = ""
-                            break;
-                        }
-                    }
-                }
-                if(s=="(" && default_color == Color.default){
-                    Span(text,Color.yellow,div)
-                }else {
-                    
-                    Span(text,default_color,div)
-                
-                }
-                text = "";
-               
-                if(reg.orange.test(s)&&default_color == Color.default||default_color == Color.orange){
-                    Span(s,Color.orange,div)
-                    if(!changed_to_orange_due_to.length){
-                        changed_to_orange_due_to = s
-                        default_color = Color.orange
-                    }else if (changed_to_orange_due_to == s) {
-                        changed_to_orange_due_to = ""
-                        default_color = Color.default
-                    }
-                    
-                    continue;
-                }
-                if(default_color == Color.default){
-                    if (reg.brackets.start.test(s)||reg.brackets.end.test(s)) {
-                       
-                        if(reg.brackets.start.test(s)){
-                            Span(s,brackets_colors[count_number_of_bracket%brackets_colors.length],div)
-                            count_number_of_bracket++
-                        }else  if(reg.brackets.end.test(s)&&count_number_of_bracket<=0){
-                            Span(s,Color.darkred,div);
-                            mirror_char = false;
-                            div.style.backgroundColor = "#331111"
-                        }else if(reg.brackets.end.test(s)){
-                            Span(s,brackets_colors[(count_number_of_bracket-1)%brackets_colors.length],div)
-                            mirror_char = true;
-                            count_number_of_bracket--
-                        }
-                        continue;
-                    }
-                }
-                
-                Span(s,default_color,div)
-                continue;
+               if (str[j-2]=='*'&&str[j-1]=="/" &&bigComment){
+                    Span(text,Color.darkgreen,div)
+                    text=""
+                    bigComment=false
+                    comment=false
+                    dcolor = Color.default;
+               }
             }
             
-            if(s=="." &&  default_color == Color.default){
-                Span(text+s,Color.blue,div)
-                text = "";
-                continue;
-            }else if(!reg.alphaNum.test(s) && default_color == Color.default&&s!="_"){
-                Span(text,Color.default,div)
-                text =""
-                Span(s,Color.white,div)
-                continue;
-            }else if(reg.num.test(s)&& default_color == Color.default&&text.length==0){
-                Span(s,Color.green,div)
+            if(str[j+1]){
+            if((str[j+1]=='*'&&s=="/") ||bigComment ){
+                bigComment = true
+                dcolor = Color.darkgreen;
+            }
+            if((str[j+1]=='/'&&s=="/")||(str[j+1]=='*'&&s=="/")){
+                Span(text,Color.default,div);
+                text = ""
+            }
+                if((str[j+1]=='/'&&s=="/") || comment){
+                comment = true;
+                dcolor = Color.darkgreen;
+                }
+            }
+            if (comment || bigComment) {
+                text=text+s
+                continue
+            }
+            if (s == '"'||s=="'" || s == '`'||strstart) {
+                strstart = true
+                text = text+s
+            }
+            if(str[j+1]&&str[j+2]){
+                if(str[j+1]=="$" && str[j+2]=="{"){
+                    Span(text, Color.orange,div)
+                    strstart = false
+                    text = ""
+                    continue;
+                }
+            }
+            if((text.includes('"')&&text.includes('"',1))||((text.includes('}')||text.includes('`'))&&text.includes('`',1))||(text.includes("'")&&text.includes("'",1))){
+                Span(text, Color.orange,div)
+                strstart = false
+                text = ""
                 continue;
             }
-            text+=s
+            if(strstart)continue
+            if(s == "." && text.length > 0){
+                text = text+s
+                Span(text, Color.blue,div)
+                text = ""
+                continue
+            }
+            
+            if(!isAlpha.test(s)&& text.length > 0){
+                let cond  = false
+                
+                for (let k = 0; k < keyword.length; k++) {
+                    const ke = keyword[k];
+                    if(text == ke){
+                        Span(text+s,Color.purple,div)
+                        text = ""
+                        break;
+                    }
+                }
+                for (let k = 0; k < keyword1.length; k++) {
+                    const ke = keyword1[k];
+                    if(text == ke){
+                        cond = true
+                        Span(text+s,Color.darkblue,div,"italic")
+                        text = ""
+                        break;
+                    }
+                }
+                if(s == "(" && cond){
+                    Span(s,Color.yellow,div)
+                }
+                if(s == "{" && cond){
+                    Span(s,Color.default,div)
+                }
+                if(s == "(" && text.length > 0){
+                    text = text+s
+                    Span(text, Color.yellow,div)
+                    text = ""
+                    continue
+                }
+                if(s == "{" && text.length > 0){
+                    text = text+s
+                    Span(text, Color.default,div)
+                    text = ""
+                    continue
+                }
+                if (!cond) {
+                 Span(text,Color.default,div)
+                    text = ""
+                }
+                if(cond)continue
+                
+                if(s==")" && text.length > 0){
+                    Span(text,Color.default,div)
+                    text = ""
+                    Span(s, Color.yellow,div)
+                    continue
+                }else if(s==")"){
+                    Span(s, Color.yellow,div)
+                    continue;
+                }
+            
+            if(s=="("){
+                Span(s, Color.yellow,div)
+                continue
+            }
         }
-       Span(text,default_color,div)
+            let next = false
+            for (let k = 0; k < keyword3.length; k++) {
+                const ke = keyword3[k];
+                 if (s==ke && text.length == 0) {
+                    Span(s,Color.green,div)
+                    next = true
+                    break;
+                }
+            }
+            if(next)continue
+          
+            if(!isAlpha.test(s)){
+                Span(text,dcolor,div)
+                Span(s,Color.white,div)
+                text = ""
+                continue;
+            }
+           
+            text = text+s
+
+        }
+        
+        Span(text,dcolor,div)
+        
     }
    
 }
@@ -387,32 +338,38 @@ const removeNum = ()=>{
     const num = document.getElementsByClassName("nums")
     numc.removeChild(num[num.length-1])
 }
-
+for (let i = 0; i < INPS.length; i++) {
+    const line = INPS[i]
+    INPS[i].addEventListener("click",(e)=>{
+        const l = e.currentTarget
+        CURRENT_INPUT = l
+    })
+}
 window.onkeydown = (e)=>{
     CURRENT_INPUT = document.activeElement;
     let keys = e.key
     if(keys == "Enter"){
         socket.emit("add",CURRENT_INPUT.id,window.getSelection().focusOffset)
         CURRENT_INPUT.contentEditable = "false"
-
+        console.log(keys);
     }
     if(keys == "Backspace"&&window.getSelection().focusOffset == 0){
        if(CURRENT_INPUT){ 
         socket.emit("remove",CURRENT_INPUT.id,0)
         }
     }
-
-   if(mirror_char){ let mirros = ["(",")","{","}","[","]","'","'",'"','"',"`","`",]
+    
+    
+    let mirros = ["(",")","{","}","[","]","'","'",'"','"',"`","`",]
     for (let i = 0; i < mirros.length; i+=2) {
-        if (keys == mirros[i] ) {
-            let pos =  window.getSelection().focusOffset;
-            let str = CURRENT_INPUT.textContent
-            CURRENT_INPUT.innerText = str.slice(0,pos)+mirros[i+1]+str.slice(pos)
-            setCaretPos(CURRENT_INPUT,pos);
+        if (keys == mirros[i]) {
+    let leng =  CURRENT_INPUT.textContent.length
+            CURRENT_INPUT.innerText = CURRENT_INPUT.textContent+mirros[i+1]
+            setCaretPos(CURRENT_INPUT,leng);
             break;
         }
         
-    }}
+    }
   
     
 
@@ -477,9 +434,7 @@ const Color = {
     orange:"#f79256",
     yellow:"#ffdd00",
     white:"#ffffff",
-    darkgreen: "#007542",
-    darkred:"#dd0000",
-    classColor:"#11ffaa"
+    darkgreen: "#007542"
 }
 const colorCode  = document.getElementById("color_code")
 function Span(msg,color,div,italic = "normal"){
@@ -533,6 +488,7 @@ socket.on("codeFile",(codes) =>{
     for (let i = 0; i < codes.length; i++) {
         const s= codes[i];
         if(s == "\n"||i==codes.length-1){
+            if(s=="\n"&&text.length==0)continue;
             if(i==codes.length-1 && s!="\n"){     
                 text = text+s
             }

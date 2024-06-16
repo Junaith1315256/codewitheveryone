@@ -180,7 +180,7 @@ const RunColorCode = ()=>{
                 }
             } 
             if(str[j+1]){
-                if(str[j+1]=='/'&&s=='/'&&!comment){
+                if(str[j+1]=='/'&&s=='/'&&!comment &&default_color==Color.default){
                     Span(text,default_color,div)
                     text = ""
                     before_comment_color = default_color
@@ -188,7 +188,7 @@ const RunColorCode = ()=>{
                     comment = true
                     
                 }
-                if(str[j+1]=='*'&&s=='/' && !multiComment){
+                if(str[j+1]=='*'&&s=='/' && !multiComment&&default_color==Color.default){
                     Span(text,default_color,div)
                     text = ""
                     before_comment_color = default_color

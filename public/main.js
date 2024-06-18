@@ -127,6 +127,7 @@ RUN.addEventListener("click",()=>{
 const RunColorCode = ()=>{
     colorCode.innerHTML = ""
     let count_number_of_bracket = 0;
+    let changed_to_orange_due_to = ""
     let brackets_colors = [Color.blue,Color.yellow,Color.purple]
    let  multiComment  = false
     let default_color =Color.default;
@@ -157,7 +158,6 @@ const RunColorCode = ()=>{
             alphaNum: /^[a-zA-Z0-9]+$/,
             num:/^[0-9]+$/
         }
-        let changed_to_orange_due_to = ""
         let inside_quote = false
         for (let j = 0; j < str.length; j++) {
             let s = str[j];
